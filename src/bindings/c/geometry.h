@@ -1,4 +1,3 @@
-
 #ifndef AETHER_GEOMETRY_H
 #define AETHER_GEOMETRY_H
 
@@ -22,7 +21,8 @@ SHO_PUBLIC void make_2d_vessel_from_1d(int elemlist_len, int elemlist[]);
 SHO_PUBLIC void define_rad_from_file(const char *FIELDFILE, const char *radius_type);
 SHO_PUBLIC int get_local_node_f(const char *ndimenstion, const char *np_global);
 SHO_PUBLIC void define_rad_from_geom(const char *ORDER_SYSTEM, double CONTROL_PARAM, const char *START_FROM,
-                                     double START_RAD, const char *GROUP_TYPE, const char *GROUP_OPTIONS);
+                                     double START_RAD, const char *GROUP_TYPE, const char *GROUP_OPTIONS,
+                                     int modify_indices[], int modify_indices_len);
 SHO_PUBLIC void element_connectivity_1d();
 SHO_PUBLIC void evaluate_ordering();
 SHO_PUBLIC void volume_of_mesh(double *volume_model, double *volume_tree);

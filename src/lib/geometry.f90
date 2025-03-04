@@ -3234,7 +3234,7 @@ contains
 !!!#############################################################################
 
   subroutine define_rad_from_geom(ORDER_SYSTEM, CONTROL_PARAM, START_FROM, &
-       USER_RAD, group_type_in, group_option_in)
+       USER_RAD, group_type_in, group_option_in, modify_indices)
     !*define_rad_from_geom:* Defines vessel or airway radius based on
     ! their geometric structure. For 'order_system' == 'strah' or 'horsf', uses a
     ! user-defined maximum radius and branching ratio; for == 'fit', uses pre-
@@ -3247,9 +3247,10 @@ contains
     !                                    order_system = 'fit'
     character(LEN=*), intent(in) :: ORDER_SYSTEM,START_FROM
     character(LEN=*), optional :: group_type_in, group_option_in
+    integer, optional, intent(in) :: modify_indices(:)
     !Input options ORDER_SYSTEM=STRAHLER (CONTROL_PARAM=RDS), HORSFIELD (CONTROL_PARAM=RDH)
     ! Local variables
-    integer :: inlet_count,ne,ne0,ne_max,ne_min,ne_start,nindex,norder,n_max_ord
+    integer :: inlet_count,ne,ne0,ne_max,ne_min,ne_start,nindex,norder,n_max_ord,i
     real(dp) :: max_radius,radius,ratio_diameter
     logical :: found
     character(LEN=100) :: group_type
@@ -3291,6 +3292,15 @@ contains
     endif
 
     ne=ne_start
+
+    ! Handle modify_indices parameter if present
+    if(present(modify_indices)) then
+      do i = 1, size(modify_indices)
+         if(modify_indices(i) > 0) then
+            write(*,'(a,i6)') "  Element: ", modify_indices(i)
+         endif
+      enddo
+    endif
 
     if(ORDER_SYSTEM(1:3).eq.'fit')then
        nindex = no_hord ! default is Horsfield ordering; could be modified to either type
