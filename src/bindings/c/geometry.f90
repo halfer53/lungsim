@@ -306,10 +306,11 @@ contains
 !
 !*define_rad_from_geom:* Defines vessel or airway radius based on their geometric structure
   subroutine define_rad_from_geom_c(order_system, order_system_len, control_param, &
-        start_from, start_from_len, start_rad, group_type, group_type_len, group_options, group_options_len) &
+        start_from, start_from_len, start_rad, group_type, group_type_len, group_options, group_options_len, &
+         modify_indices, modify_indices_len) &
         bind(C, name="define_rad_from_geom_c")
 
-    use iso_c_binding, only: c_ptr
+    use iso_c_binding, only: c_ptr, c_null_ptr, c_f_pointer, c_loc, c_int
     use utils_c, only: strncpy
     use other_consts, only: MAX_STRING_LEN
     use arrays, only: dp
@@ -317,16 +318,28 @@ contains
     implicit none
 
     real(dp),intent(in) :: control_param, start_rad
-    integer,intent(in) :: order_system_len, start_from_len, group_type_len, group_options_len
+    integer,intent(in) :: order_system_len, start_from_len, group_type_len, group_options_len, modify_indices_len
     type(c_ptr), value, intent(in) :: order_system, start_from, group_type, group_options
+    integer, intent(in) :: modify_indices(*)
     character(len=MAX_STRING_LEN) :: order_system_f, start_from_f, group_type_f, group_options_f
+    integer, allocatable :: modify_indices_f(:)
 
     call strncpy(order_system_f, order_system, order_system_len)
     call strncpy(start_from_f, start_from, start_from_len)
     call strncpy(group_options_f, group_options, group_options_len)
     call strncpy(group_type_f, group_type, group_type_len)
 
-    call define_rad_from_geom(order_system_f, control_param, start_from_f, start_rad, group_type_f, group_options_f)
+    if (modify_indices_len > 0) then
+      allocate(modify_indices_f(modify_indices_len))
+      modify_indices_f = modify_indices(1:modify_indices_len)
+    else
+      allocate(modify_indices_f(0))
+    endif
+
+    call define_rad_from_geom(order_system_f, control_param, start_from_f, start_rad, &
+                             group_type_f, group_options_f, modify_indices_f)
+
+    if (allocated(modify_indices_f)) deallocate(modify_indices_f)
 
   end subroutine define_rad_from_geom_c
 !
