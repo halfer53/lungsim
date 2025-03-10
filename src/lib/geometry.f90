@@ -3291,16 +3291,10 @@ contains
        read (START_FROM,'(I10)') ne_start
     endif
 
-    ne=ne_start
 
-    ! Handle modify_indices parameter if present
-    if(present(modify_indices)) then
-      do i = 1, size(modify_indices)
-         if(modify_indices(i) > 0) then
-            write(*,'(a,i6)') "  Element: ", modify_indices(i)
-         endif
-      enddo
-    endif
+
+
+    ne=ne_start
 
     if(ORDER_SYSTEM(1:3).eq.'fit')then
        nindex = no_hord ! default is Horsfield ordering; could be modified to either type
@@ -3354,6 +3348,17 @@ contains
              elem_field(ne_radius_out,ne)=radius
           endif
        enddo
+    endif
+
+    if(present(modify_indices)) then
+        do i = 1, SIZE(modify_indices)
+            ne = modify_indices(i)
+            if (ne >= ne_min .and. ne <= ne_max) then
+                elem_field(ne_radius, ne) = 1.1_dp * elem_field(ne_radius, ne)
+            else
+                print *, "Warning: Airway index ", ne, " is out of range and will be skipped."
+            endif
+        end do
     endif
 
     call enter_exit(sub_name,2)
@@ -3908,9 +3913,9 @@ contains
        unit_field(nu_vol,nunit) = unit_field(nu_vol,nunit)*factor_adjust
     enddo
 
-    write(*,'('' Number of elements is '',I5)') num_elems
-    write(*,'('' Initial volume is '',F6.2,'' L'')') total_volume/1.0e+6_dp
-    write(*,'('' Deadspace volume is '',F6.1,'' mL'')') volume_of_tree/1.0e+3_dp
+    !write(*,'('' Number of elements is '',I5)') num_elems
+    !write(*,'('' Initial volume is '',F6.2,'' L'')') total_volume/1.0e+6_dp
+    !write(*,'('' Deadspace volume is '',F6.1,'' mL'')') volume_of_tree/1.0e+3_dp
 
     call enter_exit(sub_name,2)
 

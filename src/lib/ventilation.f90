@@ -41,8 +41,14 @@ contains
 
 !!!#############################################################################
 
-  subroutine evaluate_vent
+  subroutine evaluate_vent()
     !*evaluate_vent:* Sets up and solves dynamic ventilation model
+      use arrays, only: dp
+      implicit none
+
+
+
+
 
     ! Local variables
     integer :: gdirn                  ! 1(x), 2(y), 3(z); upright lung (for our
@@ -122,12 +128,12 @@ contains
 !!! calculate the total model volume
     call volume_of_mesh(init_vol,volume_tree)
 
-    write(*,'('' Anatomical deadspace = '',F8.3,'' ml'')') &
-         volume_tree/1.0e+3_dp ! in mL
-    write(*,'('' Respiratory volume   = '',F8.3,'' L'')') &
-         (init_vol-volume_tree)/1.0e+6_dp !in L
-    write(*,'('' Total lung volume    = '',F8.3,'' L'')') &
-         init_vol/1.0e+6_dp !in L
+!    write(*,'('' Anatomical deadspace = '',F8.3,'' ml'')') &
+!         volume_tree/1.0e+3_dp ! in mL
+!    write(*,'('' Respiratory volume   = '',F8.3,'' L'')') &
+!         (init_vol-volume_tree)/1.0e+6_dp !in L
+!    write(*,'('' Total lung volume    = '',F8.3,'' L'')') &
+!         init_vol/1.0e+6_dp !in L
 
     unit_field(nu_dpdt,1:num_units) = 0.0_dp
 
@@ -139,11 +145,10 @@ contains
 
     chestwall_restvol = init_vol + chest_wall_compliance * (-ppl_current)
     Pcw = (chestwall_restvol - init_vol)/chest_wall_compliance
-    write(*,'('' Chest wall RV = '',F8.3,'' L'')') chestwall_restvol/1.0e+6_dp
+    !write(*,'('' Chest wall RV = '',F8.3,'' L'')') chestwall_restvol/1.0e+6_dp
         
-    call write_flow_step_results(chest_wall_compliance,init_vol, &
-         current_vol,ppl_current,pptrans,Pcw,p_mus,0.0_dp,0.0_dp)
-    
+
+
     continue = .true.
     do while (continue)
        n = n + 1 ! increment the breath number
@@ -153,10 +158,7 @@ contains
        ptrans_frc = SUM(unit_field(nu_pe,1:num_units))/num_units !ptrans at frc
 
        if(n.gt.1)then !write out 'end of breath' information
-          call write_end_of_breath(init_vol,current_vol,pmus_factor_in, &
-               pmus_step,sum_expid,sum_tidal,volume_target,WOBe_insp, &
-               WOBr_insp,WOB_insp)
-          
+
           if(abs(volume_target).gt.1.0e-5_dp)THEN
              ! modify driving muscle pressure by volume_target/sum_tidal
              ! this increases p_mus for volume_target>sum_tidal, and
@@ -186,8 +188,7 @@ contains
 !!!.......update the estimate of pleural pressure
           call update_pleural_pressure(ppl_current) ! new pleural pressure
            
-          call write_flow_step_results(chest_wall_compliance,init_vol, &
-               current_vol,ppl_current,pptrans,Pcw,p_mus,time,ttime)
+
 
        enddo !while time<endtime
        
@@ -212,7 +213,8 @@ contains
          elem_field(ne_Vdot,1:num_elems)/elem_field(ne_Vdot,1)
 
 !    call export_terminal_solution(TERMINAL_EXNODEFILE,'terminals')
-
+      !write(*,'('' Total Work of Breathing ='',F7.3,''J/min'')')WOB_insp
+      !result = WOB_insp
     call enter_exit(sub_name,2)
 
   end subroutine evaluate_vent
@@ -874,16 +876,16 @@ contains
           select case (label)
           case ('num_brths')
              read(buffer, *, iostat=ios) num_brths
-             print *, 'Read num_brths: ', num_brths
+             !print *, 'Read num_brths: ', num_brths
           case ('num_itns')
              read(buffer, *, iostat=ios) num_itns
-             print *, 'Read num_itns: ', num_itns
+             !print *, 'Read num_itns: ', num_itns
           case ('dt')
              read(buffer, *, iostat=ios) dt
-             print *, 'Read dt: ', dt
+             !print *, 'Read dt: ', dt
           case ('err_tol')
              read(buffer, *, iostat=ios) err_tol
-             print *, 'Read err_tol: ', err_tol
+             !print *, 'Read err_tol: ', err_tol
           case default
              print *, 'Skipping invalid label at line', line
           end select
@@ -955,49 +957,51 @@ contains
           select case (label)
           case ('FRC')
              read(buffer, *, iostat=ios) FRC
-             print *, 'Read FRC: ', FRC
+             !print *, 'Read FRC: ', FRC
           case ('constrict')
              read(buffer, *, iostat=ios) constrict
-             print *, 'Read constrict: ', constrict
+             !print *, 'Read constrict: ', constrict
           case ('T_interval')
              read(buffer, *, iostat=ios) T_interval
-             print *, 'Read T_interval: ', T_interval
+             !print *, 'Read T_interval: ', T_interval
           case ('Gdirn')
              read(buffer, *, iostat=ios) gdirn
-             print *, 'Read Gdirn: ', gdirn
+             !print *, 'Read Gdirn: ', gdirn
           case ('press_in')
              read(buffer, *, iostat=ios) press_in
-             print *, 'Read press_in: ', press_in
+             !print *, 'Read press_in: ', press_in
           case ('COV')
              read(buffer, *, iostat=ios) COV
-             print *, 'Read COV: ', COV
+             !print *, 'Read COV: ', COV
           case ('RMaxMean')
              read(buffer, *, iostat=ios) RMaxMean
-             print *, 'Read RMaxMean: ', RMaxMean
+             !print *, 'Read RMaxMean: ', RMaxMean
           case ('RMinMean')
              read(buffer, *, iostat=ios) RMinMean
-             print *, 'Read RMinMean: ', RMinMean
+             !print *, 'Read RMinMean: ', RMinMean
           case ('i_to_e_ratio')
              read(buffer, *, iostat=ios) i_to_e_ratio
-             print *, 'Read i_to_e_ratio: ', i_to_e_ratio
+             !print *, 'Read i_to_e_ratio: ', i_to_e_ratio
           case ('refvol')
              read(buffer, *, iostat=ios) refvol
-             print *, 'Read refvol: ', refvol
+             !print *, 'Read refvol: ', refvol
           case ('volume_target')
              read(buffer, *, iostat=ios) volume_target
-             print *, 'Read volume_target: ', volume_target
+             !print *, 'Read volume_target: ', volume_target
           case ('pmus_step')
              read(buffer, *, iostat=ios) pmus_step
-             print *, 'Read pmus_step_coeff: ', pmus_step
+             !print *, 'Read pmus_step_coeff: ', pmus_step
           case ('expiration_type')
              read(buffer, *, iostat=ios) expiration_type
-             print *, 'Read expiration_type: ', expiration_type
+             !print *, 'Read expiration_type: ', expiration_type
           case ('chest_wall_compliance')
              read(buffer, *, iostat=ios) chest_wall_compliance
-             print *, 'Read chest_wall_compliance: ', chest_wall_compliance
+             !print *, 'Read chest_wall_compliance: ', chest_wall_compliance
           case default
              print *, 'Skipping invalid label at line', line
           end select
+
+
        end if
     end do
 
@@ -1122,19 +1126,9 @@ contains
     sub_name = 'write_end_of_breath'
     call enter_exit(sub_name,1)
 
-    write(*,'('' End of breath, inspired = '',F10.2,'' L'')') &
-         sum_tidal/1.0e+6_dp
-    write(*,'('' End of breath, expired  = '',F10.2,'' L'')') &
-         sum_expid/1.0e+6_dp
-    write(*,'('' Peak muscle pressure    = '',F10.2,'' cmH2O'')') &
-         pmus_step*pmus_factor_in/98.0665_dp
-    write(*,'('' Drift in FRC from start = '',F10.2,'' %'')') &
-         100*(current_vol-init_vol)/init_vol
-    write(*,'('' Difference from target Vt = '',F8.2,'' %'')') &
-         100*(volume_target-sum_tidal)/volume_target
+
     write(*,'('' Total Work of Breathing ='',F7.3,''J/min'')')WOB_insp
-    write(*,'('' elastic WOB ='',F7.3,''J/min'')')WOBe_insp
-    write(*,'('' resistive WOB='',F7.3,''J/min'')')WOBr_insp
+
           
     call enter_exit(sub_name,2)
 
